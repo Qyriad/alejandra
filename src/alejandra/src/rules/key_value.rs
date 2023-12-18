@@ -83,38 +83,46 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
     steps.push_back(BuildStep::Format(child_equal));
 
     if vertical {
+        use rnix::SyntaxKind::*;
+
+        let node_gets_whitespace = matches!(
+            child_expr.kind(),
+            NODE_ASSERT |
+                NODE_ATTR_SET |
+                NODE_PAREN |
+                NODE_LAMBDA |
+                NODE_LET_IN |
+                NODE_LIST |
+                NODE_STRING |
+                NODE_WITH
+        );
+
+        let node_is_apply = matches!(child_expr.kind(), NODE_APPLY);
+
+        let snd_thru_penult_indented = crate::utils::second_through_penultimate_line_are_indented(
+            build_ctx,
+            child_expr.clone(),
+            false,
+        );
+
+        // FIXME: how the FUCK does this entire if chain work. what the fuck.
         if !comments_before.is_empty() || !comments_after.is_empty() {
             dedent = true;
             // For expanded values, allow starting the value on the same line
             // *if* it is a function. This allows constructs like
             // foo = { some, arguments }:
-            //  lambda_body
+            //   lambda_body
             if child_expr.kind() != rnix::SyntaxKind::NODE_LAMBDA {
                 steps.push_back(BuildStep::Indent);
                 steps.push_back(BuildStep::NewLine);
                 steps.push_back(BuildStep::Pad);
             }
             steps.push_back(BuildStep::Whitespace);
-        } else if {
-            use rnix::SyntaxKind::*;
-                matches!(
-                child_expr.kind(),
-                NODE_ASSERT
-                    | NODE_ATTR_SET
-                    | NODE_PAREN
-                    | NODE_LAMBDA
-                    | NODE_LET_IN
-                    | NODE_LIST
-                    | NODE_STRING
-                    | NODE_WITH
-        )} || (matches!(child_expr.kind(), rnix::SyntaxKind::NODE_APPLY)
-            && crate::utils::second_through_penultimate_line_are_indented(
-                build_ctx,
-                child_expr.clone(),
-                false,
-            ))
-        {
+        } else if matches!(child_expr.kind(), NODE_LET_IN) {
+            steps.push_back(BuildStep::Indent);
+        } else if node_gets_whitespace || (node_is_apply && snd_thru_penult_indented) {
             steps.push_back(BuildStep::Whitespace);
+            //steps.push_back(BuildStep::Indent);
         } else {
             dedent = true;
             steps.push_back(BuildStep::Indent);
