@@ -88,6 +88,8 @@ pub(crate) fn rule(
 
         if let Some(child) = children.peek_next() {
             if let rnix::SyntaxKind::TOKEN_CURLY_B_CLOSE = child.kind() {
+                // Add the last whitespace, to make { } instead of {}.
+                steps.push_back(crate::builder::Step::Whitespace);
                 break;
             }
 
@@ -98,9 +100,9 @@ pub(crate) fn rule(
                 steps.push_back(crate::builder::Step::Pad);
                 steps.push_back(crate::builder::Step::FormatWider(child));
             } else {
-                if item_index > 1 {
-                    steps.push_back(crate::builder::Step::Whitespace);
-                }
+                // Add a space before each element of the one-line attrset.
+                // This includes the first element, to make { } instead of {}.
+                steps.push_back(crate::builder::Step::Whitespace);
                 steps.push_back(crate::builder::Step::Format(child));
             }
             children.move_next();
