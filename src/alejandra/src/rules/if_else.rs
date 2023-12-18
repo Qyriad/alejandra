@@ -37,10 +37,7 @@ pub(crate) fn rule(
     // if_expr
     if !if_.has_inline_comment
         && !if_.has_comments
-        && crate::builder::fits_in_single_line(
-            build_ctx,
-            if_expr.element.clone(),
-        )
+        && crate::builder::fits_in_single_line(build_ctx, if_expr.element.clone())
     {
         steps.push_back(crate::builder::Step::Whitespace);
         steps.push_back(crate::builder::Step::FormatWider(if_expr.element));
@@ -103,10 +100,7 @@ pub(crate) fn rule(
                 | rnix::SyntaxKind::NODE_LET_IN
                 | rnix::SyntaxKind::NODE_LIST
                 | rnix::SyntaxKind::NODE_STRING
-        ) || crate::builder::fits_in_single_line(
-            build_ctx,
-            then_expr.element.clone(),
-        ))
+        ) || crate::builder::fits_in_single_line(build_ctx, then_expr.element.clone()))
     {
         steps.push_back(crate::builder::Step::Whitespace);
         steps.push_back(crate::builder::Step::FormatWider(then_expr.element));
@@ -170,10 +164,7 @@ pub(crate) fn rule(
                 | rnix::SyntaxKind::NODE_LET_IN
                 | rnix::SyntaxKind::NODE_LIST
                 | rnix::SyntaxKind::NODE_STRING
-        ) || crate::builder::fits_in_single_line(
-            build_ctx,
-            else_expr.element.clone(),
-        ))
+        ) || crate::builder::fits_in_single_line(build_ctx, else_expr.element.clone()))
     {
         steps.push_back(crate::builder::Step::Whitespace);
         steps.push_back(crate::builder::Step::FormatWider(else_expr.element));

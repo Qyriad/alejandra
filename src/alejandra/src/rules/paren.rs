@@ -17,9 +17,7 @@ pub(crate) fn rule(
         || closer.has_inline_comment
         || closer.has_comments
         || matches!(expression.element.kind(), rnix::SyntaxKind::NODE_IF_ELSE)
-        || ((opener.has_trivialities
-            || expression.has_trivialities
-            || closer.has_trivialities)
+        || ((opener.has_trivialities || expression.has_trivialities || closer.has_trivialities)
             && !matches!(
                 expression.element.kind(),
                 rnix::SyntaxKind::NODE_ATTR_SET

@@ -59,12 +59,10 @@ pub fn in_fs(path: String, in_place: bool) -> Status {
                     if in_place {
                         if changed {
                             match std::fs::File::create(path) {
-                                Ok(mut file) => {
-                                    match file.write_all(data.as_bytes()) {
-                                        Ok(_) => Status::Changed(true),
-                                        Err(error) => Status::from(error),
-                                    }
-                                }
+                                Ok(mut file) => match file.write_all(data.as_bytes()) {
+                                    Ok(_) => Status::Changed(true),
+                                    Err(error) => Status::from(error),
+                                },
                                 Err(error) => Status::from(error),
                             }
                         } else {

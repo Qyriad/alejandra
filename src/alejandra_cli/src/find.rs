@@ -2,10 +2,8 @@ use std::collections::HashSet;
 use std::process::exit;
 
 pub(crate) fn nix_files(include: &[&str], exclude: &[String]) -> Vec<String> {
-    let include: HashSet<_> =
-        include.iter().flat_map(|s| nix_files_in_path(s)).collect();
-    let exclude: HashSet<_> =
-        exclude.iter().flat_map(|s| nix_files_in_path(s)).collect();
+    let include: HashSet<_> = include.iter().flat_map(|s| nix_files_in_path(s)).collect();
+    let exclude: HashSet<_> = exclude.iter().flat_map(|s| nix_files_in_path(s)).collect();
 
     let mut paths: Vec<_> = include
         .difference(&exclude)
@@ -32,8 +30,7 @@ fn nix_files_in_path(path: &str) -> HashSet<String> {
 }
 
 fn is_nix_file(entry: &walkdir::DirEntry) -> bool {
-    entry.file_type().is_file()
-        && entry.file_name().to_str().unwrap().ends_with(".nix")
+    entry.file_type().is_file() && entry.file_name().to_str().unwrap().ends_with(".nix")
 }
 
 fn is_nix_file_or_dir(entry: &walkdir::DirEntry) -> bool {

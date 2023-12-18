@@ -6,9 +6,7 @@ pub(crate) fn rule(
 
     let mut children = crate::children::Children::new(build_ctx, node);
 
-    let vertical = children.has_comments()
-        || children.has_newlines()
-        || build_ctx.vertical;
+    let vertical = children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
     while children.has_next() {
         children.drain_trivia(|element| match element {

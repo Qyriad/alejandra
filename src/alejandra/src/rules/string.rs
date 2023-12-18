@@ -26,8 +26,7 @@ pub(crate) fn rule(
             }
         }
     } else {
-        let elements: Vec<rnix::SyntaxElement> =
-            children.get_remaining().to_vec();
+        let elements: Vec<rnix::SyntaxElement> = children.get_remaining().to_vec();
 
         let mut interpolations = elements
             .iter()
@@ -36,17 +35,14 @@ pub(crate) fn rule(
         let content: String = elements[0..elements.len() - 1]
             .iter()
             .map(|element| match element.kind() {
-                rnix::SyntaxKind::TOKEN_STRING_CONTENT => {
-                    element.as_token().unwrap().to_string()
-                }
+                rnix::SyntaxKind::TOKEN_STRING_CONTENT => element.as_token().unwrap().to_string(),
                 _ => PLACEHOLDER.to_string(),
             })
             .collect();
 
         let lines: Vec<&str> = content.split('\n').collect();
 
-        let should_trim_end: bool =
-            !lines.is_empty() && lines[lines.len() - 1].trim().is_empty();
+        let should_trim_end: bool = !lines.is_empty() && lines[lines.len() - 1].trim().is_empty();
 
         let mut lines: Vec<String> = lines
             .iter()
@@ -87,9 +83,7 @@ pub(crate) fn rule(
             .collect();
 
         // Indent everything 2 spaces
-        if lines.len() > 1
-            && lines.iter().filter(|line| !line.trim().is_empty()).count() >= 1
-        {
+        if lines.len() > 1 && lines.iter().filter(|line| !line.trim().is_empty()).count() >= 1 {
             lines = lines
                 .iter()
                 .map(|line| {
@@ -144,9 +138,7 @@ pub(crate) fn rule(
         }
 
         for interpolation in interpolations {
-            steps.push_back(crate::builder::Step::FormatWider(
-                interpolation.clone(),
-            ));
+            steps.push_back(crate::builder::Step::FormatWider(interpolation.clone()));
         }
     }
 

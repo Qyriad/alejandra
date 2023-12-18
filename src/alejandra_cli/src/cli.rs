@@ -69,8 +69,7 @@ fn format_stdin(verbosity: Verbosity) -> FormattedPath {
         .read_to_string(&mut before)
         .expect("Unable to read stdin.");
 
-    let (status, data) =
-        alejandra::format::in_memory(path.clone(), before.clone());
+    let (status, data) = alejandra::format::in_memory(path.clone(), before.clone());
 
     print!("{data}");
 
@@ -118,7 +117,10 @@ fn format_paths(
                     }
                 }
 
-                FormattedPath { path: path.clone(), status }
+                FormattedPath {
+                    path: path.clone(),
+                    status,
+                }
             })
             .expect("Unable to spawn formatting task.")
         })
@@ -132,11 +134,15 @@ pub fn main() -> std::io::Result<()> {
 
     let in_place = !args.check;
 
-    let include: Vec<&str> =
-        args.include.iter().map(String::as_str).collect::<Vec<&str>>();
+    let include: Vec<&str> = args
+        .include
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<&str>>();
 
-    let threads =
-        args.threads.map_or_else(num_cpus::get_physical, Into::<usize>::into);
+    let threads = args
+        .threads
+        .map_or_else(num_cpus::get_physical, Into::<usize>::into);
 
     let verbosity = match args.quiet {
         0 => Verbosity::Everything,
@@ -157,9 +163,7 @@ pub fn main() -> std::io::Result<()> {
 
     let errors = formatted_paths
         .iter()
-        .filter(|formatted_path| {
-            matches!(formatted_path.status, alejandra::format::Status::Error(_))
-        })
+        .filter(|formatted_path| matches!(formatted_path.status, alejandra::format::Status::Error(_)))
         .count();
 
     if errors > 0 {
@@ -170,9 +174,7 @@ pub fn main() -> std::io::Result<()> {
                 if errors == 1 { "" } else { "s" }
             );
             for formatted_path in formatted_paths {
-                if let alejandra::format::Status::Error(error) =
-                    formatted_path.status
-                {
+                if let alejandra::format::Status::Error(error) = formatted_path.status {
                     eprintln!("- {}: {error}", formatted_path.path);
                 }
             }
@@ -215,9 +217,7 @@ pub fn main() -> std::io::Result<()> {
 
     if verbosity.allows_info() {
         eprintln!();
-        eprintln!(
-            "Congratulations! Your code complies with the Alejandra style."
-        );
+        eprintln!("Congratulations! Your code complies with the Alejandra style.");
         eprintln!();
         eprint!("{}", random_ad());
     }

@@ -31,10 +31,7 @@ pub(crate) fn new(
         let mut skip_next_newline = false;
         children.drain_trivia(|element| match element {
             crate::children::Trivia::Comment(text) => {
-                if inline_comment.is_none()
-                    && trivialities.is_empty()
-                    && text.starts_with('#')
-                {
+                if inline_comment.is_none() && trivialities.is_empty() && text.starts_with('#') {
                     inline_comment = Some(text);
                     skip_next_newline = true;
                 } else {

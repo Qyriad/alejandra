@@ -8,15 +8,11 @@ pub(crate) fn rule(
 
     let items_count = node
         .children_with_tokens()
-        .filter(|element| {
-            !matches!(element.kind(), rnix::SyntaxKind::TOKEN_WHITESPACE)
-        })
+        .filter(|element| !matches!(element.kind(), rnix::SyntaxKind::TOKEN_WHITESPACE))
         .count()
         - 2;
 
-    let vertical = children.has_comments()
-        || children.has_newlines()
-        || build_ctx.vertical;
+    let vertical = children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
     // [
     let child = children.get_next().unwrap();
@@ -47,10 +43,7 @@ pub(crate) fn rule(
                 crate::children::Trivia::Whitespace(text) => {
                     let newlines = crate::utils::count_newlines(&text);
 
-                    if newlines > 1
-                        && item_index > 0
-                        && item_index < items_count
-                    {
+                    if newlines > 1 && item_index > 0 && item_index < items_count {
                         steps.push_back(crate::builder::Step::NewLine);
                     }
 

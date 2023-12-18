@@ -33,11 +33,9 @@ pub(crate) fn rule_with_configuration(
         if (parent_kind == "bin_op_and_or_default"
             && matches!(
                 kind,
-                rnix::SyntaxKind::NODE_BIN_OP
-                    | rnix::SyntaxKind::NODE_OR_DEFAULT
+                rnix::SyntaxKind::NODE_BIN_OP | rnix::SyntaxKind::NODE_OR_DEFAULT
             ))
-            || (parent_kind == "select"
-                && matches!(kind, rnix::SyntaxKind::NODE_SELECT))
+            || (parent_kind == "select" && matches!(kind, rnix::SyntaxKind::NODE_SELECT))
         {
             steps.push_back(crate::builder::Step::Format(first.element));
         } else {
@@ -94,9 +92,7 @@ pub(crate) fn rule_with_configuration(
                 crate::children2::Trivia::Newlines(_) => {}
             }
         }
-    } else if !second.has_inline_comment
-        && parent_kind == "bin_op_and_or_default"
-    {
+    } else if !second.has_inline_comment && parent_kind == "bin_op_and_or_default" {
         steps.push_back(crate::builder::Step::Whitespace);
     }
 

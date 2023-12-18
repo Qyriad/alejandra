@@ -104,6 +104,7 @@
           treefmt
           yarn
           yarn2nix
+          rust-analyzer
         ];
       };
 

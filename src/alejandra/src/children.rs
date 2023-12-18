@@ -1,28 +1,31 @@
+#[derive(Debug)]
 pub(crate) struct Children {
     children:      Vec<rnix::SyntaxElement>,
     current_index: usize,
 }
 
+#[derive(Debug)]
 pub(crate) enum Trivia {
     Comment(String),
     Whitespace(String),
 }
 
 impl Children {
-    pub fn new(
-        build_ctx: &crate::builder::BuildCtx,
-        node: &rnix::SyntaxNode,
-    ) -> Children {
+    pub fn new(build_ctx: &crate::builder::BuildCtx, node: &rnix::SyntaxNode) -> Children {
         let mut children: Vec<rnix::SyntaxElement> = Vec::new();
 
         // Updating the position is costly,
         // so let's just do it when really needed
         let mut pos = {
-            let has_comments = node.children_with_tokens().any(|child| {
-                matches!(child.kind(), rnix::SyntaxKind::TOKEN_COMMENT)
-            });
+            let has_comments = node
+                .children_with_tokens()
+                .any(|child| matches!(child.kind(), rnix::SyntaxKind::TOKEN_COMMENT));
 
-            if has_comments { Some(build_ctx.pos_old.clone()) } else { None }
+            if has_comments {
+                Some(build_ctx.pos_old.clone())
+            } else {
+                None
+            }
         };
 
         for child in node.children_with_tokens() {
@@ -32,14 +35,8 @@ impl Children {
                         rnix::SyntaxKind::NODE_PAREN => {
                             let mut simplified = node.clone();
 
-                            while matches!(
-                                simplified.kind(),
-                                rnix::SyntaxKind::NODE_PAREN
-                            ) {
-                                let mut children = crate::children2::new(
-                                    build_ctx,
-                                    &simplified,
-                                );
+                            while matches!(simplified.kind(), rnix::SyntaxKind::NODE_PAREN) {
+                                let mut children = crate::children2::new(build_ctx, &simplified);
 
                                 let opener = children.next().unwrap();
                                 let expression = children.next().unwrap();
@@ -62,8 +59,7 @@ impl Children {
                                             | rnix::SyntaxKind::NODE_STRING
                                     )
                                 {
-                                    simplified =
-                                        expression.element.into_node().unwrap();
+                                    simplified = expression.element.into_node().unwrap();
                                 } else {
                                     break;
                                 }
@@ -87,10 +83,7 @@ impl Children {
                             children.push(
                                 crate::builder::make_isolated_token(
                                     rnix::SyntaxKind::TOKEN_COMMENT,
-                                    &dedent_comment(
-                                        pos.as_ref().unwrap(),
-                                        token.text(),
-                                    ),
+                                    &dedent_comment(pos.as_ref().unwrap(), token.text()),
                                 )
                                 .into(),
                             );
@@ -112,7 +105,10 @@ impl Children {
             }
         }
 
-        Children { children, current_index: 0 }
+        Children {
+            children,
+            current_index: 0,
+        }
     }
 
     pub fn get(&mut self, index: usize) -> Option<rnix::SyntaxElement> {
@@ -160,9 +156,7 @@ impl Children {
     pub fn has_newlines(&self) -> bool {
         self.children.iter().any(|child| {
             child.kind() == rnix::SyntaxKind::TOKEN_WHITESPACE
-                && crate::utils::has_newlines(
-                    child.as_token().as_ref().unwrap().text(),
-                )
+                && crate::utils::has_newlines(child.as_token().as_ref().unwrap().text())
         })
     }
 
@@ -170,9 +164,7 @@ impl Children {
         while let Some(child) = self.peek_next() {
             match child.kind() {
                 rnix::SyntaxKind::TOKEN_COMMENT => {
-                    callback(Trivia::Comment(
-                        child.into_token().unwrap().text().to_string(),
-                    ));
+                    callback(Trivia::Comment(child.into_token().unwrap().text().to_string()));
                     self.move_next();
                 }
                 rnix::SyntaxKind::TOKEN_WHITESPACE => {
@@ -231,10 +223,7 @@ fn dedent_comment(pos: &crate::position::Position, text: &str) -> String {
                 let line = line.trim_end();
 
                 if !line.is_empty() {
-                    indentation = usize::min(
-                        indentation,
-                        line.len() - line.trim_start().len(),
-                    );
+                    indentation = usize::min(indentation, line.len() - line.trim_start().len());
                 }
             }
         }
@@ -250,12 +239,7 @@ fn dedent_comment(pos: &crate::position::Position, text: &str) -> String {
                 if index == 0 || index + 1 == lines.len() {
                     line.to_string()
                 } else if pos.column >= indentation {
-                    format!(
-                        "{0:<1$}{2}",
-                        "",
-                        pos.column - indentation + 1,
-                        line,
-                    )
+                    format!("{0:<1$}{2}", "", pos.column - indentation + 1, line,)
                 } else if line.len() >= indentation - pos.column {
                     line[indentation - pos.column - 1..line.len()].to_string()
                 } else {

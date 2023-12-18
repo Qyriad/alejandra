@@ -18,10 +18,8 @@ pub(crate) fn rule(
         })
         .count();
 
-    let vertical = items_count > 1
-        || children.has_comments()
-        || children.has_newlines()
-        || build_ctx.vertical;
+    let vertical =
+        items_count > 1 || children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
     // let
     let child = children.get_next().unwrap();

@@ -1,3 +1,8 @@
+use std::collections::LinkedList;
+
+use crate::builder::BuildCtx;
+use crate::builder::Step as BuildStep;
+
 pub(crate) mod apply;
 pub(crate) mod attr_set;
 pub(crate) mod bin_op;
@@ -17,9 +22,6 @@ pub(crate) mod scoped;
 pub(crate) mod select;
 pub(crate) mod string;
 
-pub(crate) fn default(
-    _: &crate::builder::BuildCtx,
-    node: &rnix::SyntaxNode,
-) -> std::collections::LinkedList<crate::builder::Step> {
-    node.children_with_tokens().map(crate::builder::Step::Format).collect()
+pub(crate) fn default(_build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<BuildStep> {
+    node.children_with_tokens().map(BuildStep::Format).collect()
 }

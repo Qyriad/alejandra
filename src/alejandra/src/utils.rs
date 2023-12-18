@@ -11,11 +11,14 @@ pub(crate) fn second_through_penultimate_line_are_indented(
     element: rnix::SyntaxElement,
     if_leq_than_two_lines: bool,
 ) -> bool {
-    let mut build_ctx =
-        crate::builder::BuildCtx { force_wide: false, ..build_ctx.clone() };
+    let mut build_ctx = crate::builder::BuildCtx {
+        force_wide: false,
+        ..build_ctx.clone()
+    };
 
-    let formatted =
-        crate::builder::build(&mut build_ctx, element).unwrap().to_string();
+    let formatted = crate::builder::build(&mut build_ctx, element)
+        .unwrap()
+        .to_string();
 
     let formatted_lines: Vec<&str> = formatted.split('\n').collect();
 

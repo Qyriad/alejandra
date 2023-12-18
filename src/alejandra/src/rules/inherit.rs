@@ -4,8 +4,7 @@ pub(crate) fn rule(
 ) -> std::collections::LinkedList<crate::builder::Step> {
     let mut steps = std::collections::LinkedList::new();
 
-    let children: Vec<crate::children2::Child> =
-        crate::children2::new(build_ctx, node).collect();
+    let children: Vec<crate::children2::Child> = crate::children2::new(build_ctx, node).collect();
 
     let vertical = build_ctx.vertical
         || children
@@ -82,10 +81,7 @@ pub(crate) fn rule(
                         // and padding at the
                         // end of this iteration, as it will lead to a new blank
                         // line in the output.
-                        if matches!(
-                            trivia_iter.peek(),
-                            Some(crate::children2::Trivia::Newlines(_))
-                        ) {
+                        if matches!(trivia_iter.peek(), Some(crate::children2::Trivia::Newlines(_))) {
                             continue;
                         }
                     }

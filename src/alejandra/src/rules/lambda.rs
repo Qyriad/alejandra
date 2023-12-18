@@ -6,9 +6,7 @@ pub(crate) fn rule(
 
     let mut children = crate::children::Children::new(build_ctx, node);
 
-    let vertical = children.has_comments()
-        || children.has_newlines()
-        || build_ctx.vertical;
+    let vertical = children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
     // a
     let child = children.get_next().unwrap();
@@ -18,8 +16,7 @@ pub(crate) fn rule(
         steps.push_back(crate::builder::Step::Format(child));
     }
 
-    if let rnix::SyntaxKind::TOKEN_COMMENT
-    | rnix::SyntaxKind::TOKEN_WHITESPACE =
+    if let rnix::SyntaxKind::TOKEN_COMMENT | rnix::SyntaxKind::TOKEN_WHITESPACE =
         children.peek_next().unwrap().kind()
     {
         steps.push_back(crate::builder::Step::NewLine);

@@ -8,12 +8,8 @@ pub(crate) fn rule(
 
     let items_count = node
         .children_with_tokens()
-        .skip_while(|element| {
-            element.kind() != rnix::SyntaxKind::TOKEN_CURLY_B_OPEN
-        })
-        .take_while(|element| {
-            element.kind() != rnix::SyntaxKind::TOKEN_CURLY_B_CLOSE
-        })
+        .skip_while(|element| element.kind() != rnix::SyntaxKind::TOKEN_CURLY_B_OPEN)
+        .take_while(|element| element.kind() != rnix::SyntaxKind::TOKEN_CURLY_B_CLOSE)
         .filter(|element| {
             matches!(
                 element.kind(),
@@ -25,10 +21,9 @@ pub(crate) fn rule(
         })
         .count();
 
-    let vertical = items_count > 1
-        || children.has_comments()
-        || children.has_newlines()
-        || build_ctx.vertical;
+    // FIXME: Make more dynamic
+    let vertical =
+        items_count > 3 || children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
     // rec
     let child = children.peek_next().unwrap();
@@ -36,8 +31,7 @@ pub(crate) fn rule(
         steps.push_back(crate::builder::Step::Format(child));
         children.move_next();
 
-        if let rnix::SyntaxKind::TOKEN_COMMENT
-        | rnix::SyntaxKind::TOKEN_WHITESPACE =
+        if let rnix::SyntaxKind::TOKEN_COMMENT | rnix::SyntaxKind::TOKEN_WHITESPACE =
             children.peek_next().unwrap().kind()
         {
             steps.push_back(crate::builder::Step::NewLine);

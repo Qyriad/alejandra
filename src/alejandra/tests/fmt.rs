@@ -6,18 +6,16 @@ use pretty_assertions::assert_eq;
 fn cases() {
     let should_update = std::env::var("UPDATE").is_ok();
 
-    let cases: std::collections::HashSet<String> =
-        std::fs::read_dir("tests/cases")
-            .unwrap()
-            .map(|entry| entry.unwrap().file_name().into_string().unwrap())
-            .collect();
+    let cases: std::collections::HashSet<String> = std::fs::read_dir("tests/cases")
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().into_string().unwrap())
+        .collect();
 
     for case in cases {
         let path_in = format!("tests/cases/{}/in.nix", case);
         let path_out = format!("tests/cases/{}/out.nix", case);
         let content_in = std::fs::read_to_string(path_in.clone()).unwrap();
-        let content_got =
-            alejandra::format::in_memory(path_in, content_in.clone()).1;
+        let content_got = alejandra::format::in_memory(path_in, content_in.clone()).1;
 
         if should_update {
             std::fs::File::create(&path_out)
@@ -30,8 +28,7 @@ fn cases() {
 
         assert_eq!(
             content_out, content_got,
-            "Test case `{case}` failed; see \
-             `src/alejandra/tests/cases/{case}/`"
+            "Test case `{case}` failed; see `src/alejandra/tests/cases/{case}/`"
         );
     }
 }

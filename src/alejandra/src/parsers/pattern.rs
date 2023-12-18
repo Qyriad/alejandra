@@ -17,10 +17,7 @@ pub(crate) struct Pattern {
     pub end_at:                        Option<rnix::SyntaxElement>,
 }
 
-pub(crate) fn parse(
-    build_ctx: &crate::builder::BuildCtx,
-    node: &rnix::SyntaxNode,
-) -> Pattern {
+pub(crate) fn parse(build_ctx: &crate::builder::BuildCtx, node: &rnix::SyntaxNode) -> Pattern {
     let mut pattern = Pattern::default();
 
     let mut children = crate::children::Children::new(build_ctx, node);
@@ -77,12 +74,10 @@ pub(crate) fn parse(
         let child = children.peek_next().unwrap();
         match child.kind() {
             rnix::SyntaxKind::TOKEN_CURLY_B_CLOSE => {
-                pattern.comments_before_curly_b_close =
-                    argument.comments_before;
+                pattern.comments_before_curly_b_close = argument.comments_before;
                 break;
             }
-            rnix::SyntaxKind::TOKEN_ELLIPSIS
-            | rnix::SyntaxKind::NODE_PAT_ENTRY => {
+            rnix::SyntaxKind::TOKEN_ELLIPSIS | rnix::SyntaxKind::NODE_PAT_ENTRY => {
                 argument.item = Some(child);
                 children.move_next();
             }

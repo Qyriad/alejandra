@@ -6,9 +6,7 @@ pub(crate) fn rule(
 
     let mut children = crate::children::Children::new(build_ctx, node);
 
-    let vertical = build_ctx.vertical
-        || children.has_comments()
-        || children.has_newlines();
+    let vertical = build_ctx.vertical || children.has_comments() || children.has_newlines();
 
     // a
     let child = children.get_next().unwrap();
@@ -57,19 +55,21 @@ pub(crate) fn rule(
     let child_expr = children.get_next().unwrap();
 
     // Superfluous parens can be removed: `a = (x);` -> `a = x;`
-    let child_expr =
-        if matches!(child_expr.kind(), rnix::SyntaxKind::NODE_PAREN) {
-            let mut children: Vec<rnix::SyntaxElement> =
-                child_expr.as_node().unwrap().children_with_tokens().collect();
+    let child_expr = if matches!(child_expr.kind(), rnix::SyntaxKind::NODE_PAREN) {
+        let mut children: Vec<rnix::SyntaxElement> = child_expr
+            .as_node()
+            .unwrap()
+            .children_with_tokens()
+            .collect();
 
-            if children.len() == 3 {
-                children.swap_remove(1)
-            } else {
-                child_expr
-            }
+        if children.len() == 3 {
+            children.swap_remove(1)
         } else {
             child_expr
-        };
+        }
+    } else {
+        child_expr
+    };
 
     // peek: /**/
     let mut comments_after = std::collections::LinkedList::new();
@@ -100,10 +100,7 @@ pub(crate) fn rule(
                 | rnix::SyntaxKind::NODE_LIST
                 | rnix::SyntaxKind::NODE_STRING
                 | rnix::SyntaxKind::NODE_WITH
-        ) || (matches!(
-            child_expr.kind(),
-            rnix::SyntaxKind::NODE_APPLY
-        )
+        ) || (matches!(child_expr.kind(), rnix::SyntaxKind::NODE_APPLY)
             && crate::utils::second_through_penultimate_line_are_indented(
                 build_ctx,
                 child_expr.clone(),
