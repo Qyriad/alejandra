@@ -6,6 +6,7 @@ use crate::builder::Step as BuildStep;
 pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<BuildStep> {
     let mut steps = LinkedList::new();
 
+    let children = crate::children::Children::new(build_ctx, node);
     let pattern = crate::parsers::pattern::parse(build_ctx, node);
 
     let has_comments_between_curly_b = pattern
@@ -24,7 +25,9 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
     let arguments_count = pattern.arguments.len();
 
     let vertical = has_comments
-        //|| arguments_count > arguments_count_for_tall
+        // If the pattern is already formatted with newlines,
+        // then keep it that way.
+        || children.has_newlines()
         || (soft_len > 80)
         || (hard_len > 120)
         || (arguments_count > 0 && has_comments_between_curly_b)
