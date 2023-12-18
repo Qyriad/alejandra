@@ -9,7 +9,6 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &SyntaxNode) -> LinkedList<BuildS
     let mut steps = LinkedList::new();
 
     let mut children = crate::children::Children::new(build_ctx, node);
-    dbg!(&children);
 
     let vertical = children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
