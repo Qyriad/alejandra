@@ -68,7 +68,9 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
         if vertical {
             steps.push_back(BuildStep::NewLine);
             steps.push_back(BuildStep::Pad);
-        } else if index > 0 {
+        } else {
+            // For collapsed patterns, add a space before each argument
+            // to make { ... } instead of {...}. This includes the first argument.
             steps.push_back(BuildStep::Whitespace);
         }
 
@@ -126,6 +128,9 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
             steps.push_back(BuildStep::NewLine);
             steps.push_back(BuildStep::Pad);
         }
+    } else {
+        // Add a space after the last argument, to make { ... } instead of {...}.
+        steps.push_back(BuildStep::Whitespace);
     }
     steps.push_back(BuildStep::Token(
         rnix::SyntaxKind::TOKEN_CURLY_B_OPEN,
