@@ -88,8 +88,10 @@ pub(crate) fn rule(
 
         if let Some(child) = children.peek_next() {
             if let rnix::SyntaxKind::TOKEN_CURLY_B_CLOSE = child.kind() {
-                // Add the last whitespace, to make { } instead of {}.
-                steps.push_back(crate::builder::Step::Whitespace);
+                if !vertical {
+                    // For a single-line set, add the last whitespace, to make { } instead of {}.
+                    steps.push_back(crate::builder::Step::Whitespace);
+                }
                 break;
             }
 
