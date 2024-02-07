@@ -1,8 +1,10 @@
-pub(crate) fn rule(
-    build_ctx: &crate::builder::BuildCtx,
-    node: &rnix::SyntaxNode,
-) -> std::collections::LinkedList<crate::builder::Step> {
-    let mut steps = std::collections::LinkedList::new();
+use std::collections::LinkedList;
+
+use crate::builder::BuildCtx;
+use crate::builder::Step as BuildStep;
+
+pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<BuildStep> {
+    let mut steps = LinkedList::new();
 
     let mut children = crate::children2::new(build_ctx, node);
 
@@ -17,24 +19,24 @@ pub(crate) fn rule(
 
     // first
     if vertical {
-        steps.push_back(crate::builder::Step::FormatWider(first.element));
+        steps.push_back(BuildStep::FormatWider(first.element));
     } else {
-        steps.push_back(crate::builder::Step::Format(first.element));
+        steps.push_back(BuildStep::Format(first.element));
     }
 
     if let Some(text) = first.inline_comment {
-        steps.push_back(crate::builder::Step::Whitespace);
-        steps.push_back(crate::builder::Step::Comment(text));
-        steps.push_back(crate::builder::Step::NewLine);
-        steps.push_back(crate::builder::Step::Pad);
+        steps.push_back(BuildStep::Whitespace);
+        steps.push_back(BuildStep::Comment(text));
+        steps.push_back(BuildStep::NewLine);
+        steps.push_back(BuildStep::Pad);
     }
 
     for trivia in first.trivialities {
         match trivia {
             crate::children2::Trivia::Comment(text) => {
-                steps.push_back(crate::builder::Step::NewLine);
-                steps.push_back(crate::builder::Step::Pad);
-                steps.push_back(crate::builder::Step::Comment(text));
+                steps.push_back(BuildStep::NewLine);
+                steps.push_back(BuildStep::Pad);
+                steps.push_back(BuildStep::Comment(text));
             }
             crate::children2::Trivia::Newlines(_) => {}
         }
@@ -52,15 +54,15 @@ pub(crate) fn rule(
                     | rnix::SyntaxKind::NODE_STRING
             )
         {
-            steps.push_back(crate::builder::Step::Whitespace);
+            steps.push_back(BuildStep::Whitespace);
         } else {
-            steps.push_back(crate::builder::Step::NewLine);
-            steps.push_back(crate::builder::Step::Pad);
+            steps.push_back(BuildStep::NewLine);
+            steps.push_back(BuildStep::Pad);
         };
-        steps.push_back(crate::builder::Step::FormatWider(second.element));
+        steps.push_back(BuildStep::FormatWider(second.element));
     } else {
-        steps.push_back(crate::builder::Step::Whitespace);
-        steps.push_back(crate::builder::Step::Format(second.element));
+        steps.push_back(BuildStep::Whitespace);
+        steps.push_back(BuildStep::Format(second.element));
     }
 
     steps

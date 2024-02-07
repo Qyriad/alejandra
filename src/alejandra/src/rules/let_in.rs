@@ -1,6 +1,7 @@
 use std::collections::LinkedList;
 
-use crate::builder::{BuildCtx, Step as BuildStep};
+use crate::builder::BuildCtx;
+use crate::builder::Step as BuildStep;
 
 pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<BuildStep> {
     let mut steps = LinkedList::new();
@@ -11,24 +12,23 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
         .children()
         .filter(|element| {
             use rnix::SyntaxKind::*;
-            matches!(
-                element.kind(),
-                NODE_KEY_VALUE | NODE_INHERIT | NODE_INHERIT_FROM
-            )
+            matches!(element.kind(), NODE_KEY_VALUE | NODE_INHERIT | NODE_INHERIT_FROM)
         })
         .count();
 
     let vertical =
         items_count > 1 || children.has_comments() || children.has_newlines() || build_ctx.vertical;
 
-    // let
+    // `let` in `let <bindings> in <expr>
     let child = children.get_next().unwrap();
     if vertical {
         // For expanded `let`s, put the `let` on a new line.
         // FIXME: what will this do for a file that starts immediately with a `let`?
         steps.push_back(BuildStep::NewLine);
         steps.push_back(BuildStep::Pad);
+        // steps.push_back(BuildStep::Indent);
     }
+    // `bindings` in `let <bindings in <expr>`
     steps.push_back(BuildStep::Format(child));
     if vertical {
         steps.push_back(BuildStep::Indent);
@@ -38,7 +38,7 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
     let mut inline_next_comment = false;
 
     loop {
-        // /**/
+        // /**/ — comments, if they exist.
         children.drain_trivia(|element| match element {
             crate::children::Trivia::Comment(text) => {
                 if inline_next_comment && text.starts_with('#') {
@@ -90,15 +90,13 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
         steps.push_back(BuildStep::Whitespace);
     }
 
-    // in
+    // The `in` part.
     let child_in = children.get_next().unwrap();
 
     // /**/
     let mut child_comments = LinkedList::new();
     children.drain_trivia(|element| match element {
-        crate::children::Trivia::Comment(text) => {
-            child_comments.push_back(BuildStep::Comment(text))
-        }
+        crate::children::Trivia::Comment(text) => child_comments.push_back(BuildStep::Comment(text)),
         crate::children::Trivia::Whitespace(_) => {}
     });
 
@@ -109,14 +107,11 @@ pub(crate) fn rule(build_ctx: &BuildCtx, node: &rnix::SyntaxNode) -> LinkedList<
     let mut dedent = false;
     steps.push_back(BuildStep::Format(child_in));
     if vertical {
+        use rnix::SyntaxKind::*;
         if child_comments.is_empty()
             && matches!(
                 child_expr.kind(),
-                rnix::SyntaxKind::NODE_ATTR_SET
-                    | rnix::SyntaxKind::NODE_LET_IN
-                    | rnix::SyntaxKind::NODE_LIST
-                    | rnix::SyntaxKind::NODE_PAREN
-                    | rnix::SyntaxKind::NODE_STRING
+                NODE_ATTR_SET | NODE_LET_IN | NODE_LIST | NODE_PAREN | NODE_STRING,
             )
         {
             steps.push_back(BuildStep::Whitespace);

@@ -87,36 +87,6 @@ impl FormatSyntax for rnix::SyntaxElement {
             rnix::SyntaxElement::Node(node) => node.log_syn_indent(log_level, options, indent_level),
             rnix::SyntaxElement::Token(token) => token.log_syn_indent(log_level, options, indent_level),
         };
-        //let indent: String = vec!["  "; indent_level].into_iter().collect();
-        //let element_text = self.to_string();
-        //let is_multiline = element_text.contains("\n");
-        //
-        //let kind_fmt = format!("{:?}", self.kind());
-        //
-        //let element_fmt = {
-        //    if is_multiline {
-        //        if options.short {
-        //            let first_line = element_text.lines().next().unwrap();
-        //            format!("{first_line} ⟨…⟩")
-        //        } else {
-        //            format!("`\n{}\n`", element_text)
-        //        }
-        //    } else {
-        //        format!("{element_text}")
-        //    }
-        //};
-        //
-        //log::log!(log_level, "{}{} {}", indent, kind_fmt, element_fmt);
-        //
-        //if options.recursive {
-        //    // Only nodes can have children.
-        //    if let Some(node) = self.as_node() {
-        //        let children = node.children_with_tokens();
-        //        for child in children {
-        //            child.log_syn_indent(log_level, options, indent_level + 1);
-        //        }
-        //    }
-        //}
     }
 }
 
@@ -139,7 +109,7 @@ impl FormatSyntax for rnix::SyntaxNode {
                 if options.short {
 
                     // If this element is multi-line, but we're logging in "short" mode,
-                    // then log the entire first line of this element, then a unicode ␍
+                    // then log the entire first line of this element, then a unicode ␤
                     // to indicate that there's a newline, and then we'll give a short
                     // "preview" of the next line, skipping whitespace.
                     // We'll try not to go over 80 characters for the overall line length,
@@ -163,7 +133,7 @@ impl FormatSyntax for rnix::SyntaxNode {
 
                     // FIXME: color properly.
                     // For now, bold the ␍ and the ellipsis.
-                    format!("{first_line} \x1b[1m␍\x1b[22m {second_line_preview}\x1b[1m…\x1b[22m")
+                    format!("{first_line} \x1b[1m␤\x1b[22m {second_line_preview}\x1b[1m…\x1b[22m")
                 } else {
                     format!("`\n{element_text}\n`")
                 }
@@ -193,7 +163,24 @@ impl FormatSyntax for rnix::SyntaxToken {
     fn log_syn_indent(&self, log_level: log::Level, _options: FormatSyntaxOptions, indent_level: usize) {
         let indent: String = vec!["  "; indent_level].into_iter().collect();
 
-        log::log!(log_level, "{}{:?}", indent, self.kind());
+        if let rnix::SyntaxKind::TOKEN_WHITESPACE = self.kind() {
+            let mut whitespaces = String::new();
+            for byte in self.text().as_bytes().into_iter().copied() {
+                if byte == 0x20 {
+                    // Show spaces as unicode ␠.
+                    whitespaces.push_str("␠");
+                } else if byte == 0x0A {
+                    // Show newlines as unicode ␤
+                    whitespaces.push_str("␤");
+                } else {
+                    // Otherwise, show it as an escape sequence.
+                    whitespaces.push_str(&format!(r"\x{:02x}", byte));
+                }
+            }
+            log::log!(log_level, "{}{:?} `{}`", indent, self.kind(), whitespaces);
+        } else {
+            log::log!(log_level, "{}{:?}", indent, self.kind());
+        }
 
         // Tokens can't have children, so we're done here.
     }

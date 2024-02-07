@@ -7,6 +7,8 @@ pub(crate) fn rule(
     let mut children = crate::children::Children::new(build_ctx, node);
 
     let vertical = children.has_comments() || children.has_newlines() || build_ctx.vertical;
+    // eprintln!("node = {}", &node);
+    // dbg!((children.has_comments(), children.has_newlines(), build_ctx.vertical));
 
     // a
     let child = children.get_next().unwrap();
@@ -52,27 +54,17 @@ pub(crate) fn rule(
     // c
     let child = children.get_next().unwrap();
     if vertical {
-        if comment
-            || !matches!(
+        use rnix::SyntaxKind::*;
+        let node_should_newline = !matches!(
+            child.kind(),
+            NODE_ATTR_SET | NODE_PAREN | NODE_LAMBDA | NODE_LET_IN | NODE_LIST | NODE_LITERAL | NODE_STRING,
+        );
+        if comment || node_should_newline {
+            let node_should_indent = !matches!(
                 child.kind(),
-                rnix::SyntaxKind::NODE_ATTR_SET
-                    | rnix::SyntaxKind::NODE_PAREN
-                    | rnix::SyntaxKind::NODE_LAMBDA
-                    | rnix::SyntaxKind::NODE_LET_IN
-                    | rnix::SyntaxKind::NODE_LIST
-                    | rnix::SyntaxKind::NODE_LITERAL
-                    | rnix::SyntaxKind::NODE_STRING
-            )
-        {
-            let should_indent = !matches!(
-                child.kind(),
-                rnix::SyntaxKind::NODE_ATTR_SET
-                    | rnix::SyntaxKind::NODE_PAREN
-                    | rnix::SyntaxKind::NODE_LAMBDA
-                    | rnix::SyntaxKind::NODE_LET_IN
-                    | rnix::SyntaxKind::NODE_LIST
-                    | rnix::SyntaxKind::NODE_STRING
-            ) && build_ctx.indentation > 0;
+                NODE_ATTR_SET | NODE_PAREN | NODE_LAMBDA | NODE_LET_IN | NODE_LIST | NODE_STRING
+            );
+            let should_indent = node_should_indent && build_ctx.indentation > 0;
 
             if should_indent {
                 steps.push_back(crate::builder::Step::Indent);
@@ -81,6 +73,7 @@ pub(crate) fn rule(
             steps.push_back(crate::builder::Step::NewLine);
             steps.push_back(crate::builder::Step::Pad);
             steps.push_back(crate::builder::Step::FormatWider(child));
+
             if should_indent {
                 steps.push_back(crate::builder::Step::Dedent);
             }

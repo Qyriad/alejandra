@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub(crate) struct Children {
-    children:      Vec<rnix::SyntaxElement>,
-    current_index: usize,
+    pub(crate) children:      Vec<rnix::SyntaxElement>,
+    pub(crate) current_index: usize,
 }
 
 #[derive(Debug)]

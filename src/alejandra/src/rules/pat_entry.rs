@@ -6,7 +6,6 @@ use crate::builder::BuildCtx;
 use crate::builder::Step as BuildStep;
 
 pub(crate) fn rule(build_ctx: &BuildCtx, node: &SyntaxNode) -> LinkedList<BuildStep> {
-    eprintln!("apply pat_entry rule for {}", node);
     let mut steps = LinkedList::new();
 
     let mut children = crate::children::Children::new(build_ctx, node);
